@@ -1,0 +1,411 @@
+/* Global styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f5ff; /* Light blue background */
+}
+
+.container {
+    max-width: 1000px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* Header styles */
+header {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+header h1 {
+    margin: 0;
+    color: #007bff; /* Blue header text */
+    font-size: 36px;
+}
+
+/* Login form styles */
+.login-form {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.login-form h2 {
+    margin-top: 0;
+    text-align: center;
+    color: #007bff; /* Blue form header text */
+}
+
+.login-form input {
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+/* Button styles */
+.btn-primary {
+    padding: 8px 30px;
+    background-color: #007bff; /* Blue button background */
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+.btn-secondary {
+    padding: 15px 30px;
+    background-color: #dc3545; /* Red button background */
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background-color: #c82333; /* Darker red on hover */
+}
+
+/* File manager styles */
+.file-manager {
+    background-color: #f8f9fa; /* Light gray background */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+/* File manager styles */
+.file-manager h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #007bff; /* Blue section header text */
+}
+
+.file-actions {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.search-input {
+    flex: 1;
+    margin-right: 10px;
+    padding: 8px; /* Reduce padding */
+    font-size: 14px; /* Reduce font size */
+}
+
+.file-list {
+    padding: 0;
+    list-style-type: none;
+    margin-bottom: 10px; /* Reduce margin */
+}
+
+.file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #fff;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+}
+
+.file-item:hover {
+    transform: translateY(-5px);
+}
+
+.download-button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.download-button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+.upload-container {
+    display: flex;
+    align-items: center;
+}
+
+.file-input-wrapper {
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+    margin-right: 10px; /* Adjust margin as needed */
+}
+
+.file-input-label {
+    display: inline-block;
+    color: #fff;
+    background-color: #007bff;
+    border-radius: 8px;
+    padding: 10px 10px; /* Adjust padding as needed */
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.file-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.upload-button {
+    padding: 10px 10px; /* Adjust padding as needed */
+    background-color: #007bff; /* Blue button background */
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.upload-button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+.selected-file-display {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    flex: 1; /* Take up remaining space */
+    overflow: hidden; /* Hide overflow text */
+    text-overflow: ellipsis; /* Add ellipsis for long file names */
+    white-space: nowrap; /* Prevent wrapping */
+}
+
+/* Filter bar styles */
+.filter-bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px; /* Add some space below the filter bar */
+}
+
+.filter-select {
+    padding: 10px; /* Increase padding for better visibility and touch */
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-right: 10px;
+}
+
+
+
+.filter-button {
+    padding: 10px 20px; /* Increase padding */
+    background-color: #007bff; /* Blue button background */
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.filter-button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination .page-item {
+    list-style: none;
+    margin: 0 5px;
+}
+
+.pagination .page-link {
+    display: block;
+    padding: 10px 15px;
+    color: #007bff;
+    border: 1px solid #007bff;
+    border-radius: 5px;
+    background-color: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.pagination .page-link:hover,
+.pagination .page-link:focus {
+    background-color: #007bff;
+    color: #fff;
+    border-color: #007bff;
+}
+
+.pagination .active .page-link {
+    background-color: #007bff;
+    color: #fff;
+    border-color: #007bff;
+    pointer-events: none;
+}
+
+.pagination .disabled .page-link {
+    color: #ccc;
+    pointer-events: none;
+    cursor: default;
+}
+
+
+.page-info,
+.file-count {
+    font-size: 16px;
+}
+
+.btn-secondary {
+    /* Button styles */
+}
+
+/* Adjust spacing between pagination elements */
+.page-info,
+.file-count,
+.btn-secondary {
+    margin: 5px;
+}
+
+/* Reduce layout size */
+.filter-bar,
+.file-actions,
+.file-list-small {
+    margin-bottom: 10px; /* Reduce space between elements */
+}
+
+/* Reduce button size */
+.filter-button-small,
+.btn-primary-small,
+.page-link-small {
+    padding: 8px 16px; /* Reduce padding */
+    font-size: 14px; /* Reduce font size */
+}
+
+/* Added space between Download and Upload sections */
+#uploadSection {
+    margin-top: 40px; /* Add space between sections */
+}
+
+/* Popup styles */
+.popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    z-index: 9999;
+}
+
+.file-table th {
+    /* Header position styles */
+    text-align: center;
+    font-weight: bold;
+}
+
+.file-table th,
+.file-table td {
+    padding: 10px; /* Adjust padding */
+}
+    
+
+/* File list styles */
+.file-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px; /* Add some space above the file list */
+}
+
+.file-table th,
+.file-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+}
+
+.file-table th {
+    background-color: #f2f2f2; /* Light gray background for table headers */
+    font-weight: bold;
+}
+
+.file-table tr:nth-child(even) {
+    background-color: #f9f9f9; /* Alternate row background color */
+}
+
+.file-table tr:hover {
+    background-color: #f2f2f2; /* Light gray background on hover */
+}
+
+/* Adjust spacing between pagination elements */
+.pagination-info,
+.file-count {
+    font-size: 16px;
+    margin-top: 20px; /* Add some space above pagination elements */
+}
+
+/* Reduce button size */
+.filter-button,
+.btn-primary,
+.page-link {
+    padding: 10px 20px; /* Adjust padding */
+    font-size: 16px;
+}
+
+/* Adjust spacing between elements */
+.file-actions,
+.file-list {
+    margin-bottom: 10px; /* Add some space below file actions and file list */
+}
+
+/* Adjust padding for search input */
+.search-input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    flex: 1; /* Take up remaining space */
+}
+
+/* Improve hover effect for file items */
+.file-item:hover {
+    background-color: #f0f0f0; /* Light gray background on hover */
+    cursor: pointer;
+}
+
+/* Define styles for the dividing line */
+.divider-line {
+    border: none;
+    height: 2px; /* Adjust the height of the line as needed */
+    background-color:  #007bff; /* Black color */
+    margin: 20px 0; /* Margin above and below the line */
+}
