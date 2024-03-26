@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SFTP File Manager</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>SFTP File Manager</h1>
+        </header>
+
+        <div id="loginForm" class="login-form">
+            <h2>Login</h2>
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <button onclick="login()" class="btn-primary">Login</button>
+        </div>
+
+        <div id="fileManager" class="file-manager" style="display: none;">
+            <div class="grid-container">
+                <div class="grid-item">
+                    <div id="downloadSection" class="section">
+                        <h2>Download Section</h2>
+                        <!-- Filter bar -->
+                        <div class="filter-bar">
+                            <select id="filterSelect" class="filter-select" onchange="updateFilterOptions()">
+                                <option value="ALL">ALL</option>
+                                <option value="site_id">Site_ID</option>
+                                <option value="treg">TREG</option>
+                                <option value="mor">MOR</option>
+                                <option value="witel">WITEL</option>
+                            </select>
+                            <select id="filterOptions" class="filter-select"></select>
+                            <button onclick="applyFilter()" class="filter-button">Apply Filter</button>
+                        </div>
+                        <!-- End of filter bar -->
+                        <div class="file-actions">
+                            <!-- Search bar -->
+                            <input type="text" id="searchInput" placeholder="Search..." class="search-input">
+                            <button onclick="searchFiles()" class="btn-primary">Search</button>
+                        </div>
+                        <div id="fileListContainer">
+                            <table id="fileTable" class="file-table">
+                                <thead>
+                                    <tr>
+                                        <th>Site ID</th>
+                                        <th>TREG</th>
+                                        <th>MOR</th>
+                                        <th>WITEL</th>
+                                        <th>Network Type</th>
+                                        <th>Filename</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="fileList"></tbody>
+                            </table>
+                        </div>
+                        <ul id="fileList" class="file-list"></ul>
+                        <!-- Button to download displayed files as CSV -->
+                        <button id="downloadButton">Download Data as CSV</button>
+                        <!-- Pagination -->
+                        <div class="pagination" id="pagination">
+                            <ul class="pagination">
+                                <li class="active page-item"><button id="1" class="page-link">1</button></li>
+                                <li class="page-item"><button id="2" class="page-link">2</button></li>
+                                <li class="page-item"><button id="3" class="page-link">3</button></li>
+                                <li class="page-item"><button id="4" class="page-link">4</button></li>
+                                <li class="page-item"><button id="5" class="page-link">5</button></li>
+                                <li class="page-item" style="display: none;"><button id="1104" class="page-link">1104</button></li>
+                            </ul>
+                            <div class="pagination-info" id="pageInfo"></div>
+                            <div class="pagination-info" id="totalFilesInfo"></div>
+                        </div>
+                    </div>
+                </div>
+                <hr class="divider-line"> <!-- Dividing line -->
+                <div class="grid-item">
+                    <div id="uploadSection" class="section">
+                        <h2>Upload Section</h2>
+                        <div class="upload-container">
+                            <div class="file-input-wrapper">
+                                <label for="fileInput" class="file-input-label">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-upload">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="17 8 12 3 7 8"></polyline>
+                                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                                    </svg>
+                                    Select File
+                                    <input type="file" id="fileInput" class="file-input" accept=".zip" onchange="displaySelectedFile()">
+                                </label>
+                            </div>
+                            <!-- Display the selected file name here -->
+                            <div id="selectedFileDisplay" class="selected-file-display"></div>
+                            <button onclick="uploadFile(document.getElementById('fileInput').files[0])" class="btn-primary upload-button">Upload Now</button>
+                        </div>
+                        <div id="uploadOutput" class="upload-output"></div> <!-- Display the selected file name here -->
+                        <!-- Upload status -->
+                        <div id="uploadStatus" class="upload-status"></div>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="signOut()" id="signOutButton" class="btn-secondary" style="display: none;">Sign Out</button>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
