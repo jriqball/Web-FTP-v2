@@ -1,0 +1,419 @@
+// Global variables for managing pagination
+let currentPage = 1;
+let totalFiles = 0;
+const itemsPerPage = 5;
+
+// Function to perform login
+const login = async () => {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    // Check username and password
+    if (username === 'admin' && password === 'admin1') {
+        // Show file manager section
+        const loginForm = document.getElementById('loginForm');
+        const fileManager = document.getElementById('fileManager');
+        const downloadSection = document.getElementById('downloadSection');
+        if (loginForm && fileManager && downloadSection) {
+            loginForm.style.display = 'none';
+            fileManager.style.display = 'block';
+            downloadSection.style.display = 'block';
+        } else {
+            console.error('Login form, file manager section, or download section not found');
+        }
+
+        // Fetch list of files
+        await fetchFiles();
+    } else {
+        alert('Invalid username or password');
+    }
+};
+
+// Function to update filter options
+const updateFilterOptions = async () => {
+    const filterCategory = document.getElementById('filterSelect').value;
+    const filterOptionsSelect = document.getElementById('filterOptions');
+
+    try {
+        let url = `http://10.1.8.85:3000/tftp/filterOptions/${filterCategory}`;
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error('Failed to fetch filter options');
+        }
+        const filterOptionsData = await response.json();
+
+        // Log the received filter options data
+        console.log('Received filter options data:', filterOptionsData);
+
+        // Clear existing options
+        filterOptionsSelect.innerHTML = '';
+
+        // Check if filterOptionsData is not an array or is empty
+        if (!Array.isArray(filterOptionsData) || filterOptionsData.length === 0) {
+            console.log('No valid filter options available.');
+            return;
+        }
+
+        // Update the extraction logic for filter options
+        let filterOptions = filterOptionsData
+            .map(option => option ? option.trim() : null)
+            .filter(option => option !== null && option.trim() !== '');
+
+        // Sort filter options in ascending order
+        filterOptions.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+
+        // Log the extracted and sorted filter options
+        console.log('Extracted and sorted filter options:', filterOptions);
+
+        // Populate filter options
+        filterOptions.forEach(option => {
+            const optionElement = document.createElement('option');
+            optionElement.value = option;
+            optionElement.textContent = option;
+            filterOptionsSelect.appendChild(optionElement);
+        });
+    } catch (error) {
+        console.error('Error fetching or processing filter options:', error.message);
+    }
+};
+
+
+// Function to apply filter
+const applyFilter = () => {
+    const filterCategory = document.getElementById('filterSelect').value;
+    const filterValue = document.getElementById('filterOptions').value;
+    fetchFiles(filterCategory, filterValue);
+};
+
+
+
+// Function to fetch list of files from the server with optional filter and sorting
+const fetchFiles = async (filterCategory = '', filterValue = '') => {
+    try {
+        let url = 'http://10.1.8.85:3000/tftp';
+        if (filterCategory && filterValue) {
+            url += `?${filterCategory}=${filterValue}`;
+        }
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error('Failed to fetch files');
+        }
+        let files = await response.json();
+
+        // Sort files based on the last uploaded date (assuming there's a field named 'lastUploadedDate')
+        files.sort((a, b) => new Date(b.lastUploadedDate) - new Date(a.lastUploadedDate));
+
+        totalFiles = files.length; // Update totalFiles count
+        displayFiles(files);
+    } catch (error) {
+        console.error('Error fetching files:', error.message);
+    }
+};
+
+
+
+
+// Function to display files in the list with pagination
+const displayFiles = (files) => {
+    console.log('Files:', files); // Log the files array to the console
+    const fileList = document.getElementById('fileList');
+    if (!fileList) {
+        console.error('File list element not found');
+        return;
+    }
+
+    // Clear the existing content of the file list
+    fileList.innerHTML = '';
+
+    // Calculate the start and end index of files for the current page
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, totalFiles);
+
+    // Iterate over files for the current page and create table rows
+    for (let i = startIndex; i < endIndex; i++) {
+        const file = files[i];
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${file.site_id || 'undefined'}</td>
+            <td>${file.treg || 'undefined'}</td>
+            <td>${file.mor || 'undefined'}</td>
+            <td>${file.witel || 'undefined'}</td>
+            <td>${file.network_type || 'undefined'}</td>
+            <td>${file.filename || 'undefined'}</td>
+            <td><button onclick="downloadFile('${file.filename}')">Download</button></td>
+        `;
+        fileList.appendChild(row);
+    }
+
+    // Update pagination buttons
+    updatePaginationButtons();
+};
+
+
+// Function to update pagination buttons based on total number of pages
+const updatePaginationButtons = () => {
+    const pagination = document.getElementById('pagination');
+    if (!pagination) {
+        console.error('Pagination element not found');
+        return;
+    }
+
+    pagination.innerHTML = ''; // Clear existing buttons
+
+    // Calculate the total number of pages
+    const totalPages = Math.ceil(totalFiles / itemsPerPage);
+
+    // Create buttons for each page
+    for (let i = 1; i <= totalPages; i++) {
+        const li = document.createElement('li');
+        li.classList.add('page-item');
+        if (i === currentPage) {
+            li.classList.add('active');
+        }
+        const button = document.createElement('button');
+        button.classList.add('page-link');
+        button.textContent = i;
+        button.addEventListener('click', () => {
+            currentPage = i;
+            fetchFiles();
+        });
+        li.appendChild(button);
+        pagination.appendChild(li);
+    }
+};
+
+
+// Function to handle previous page button click
+const prevPage = () => {
+    if (currentPage > 1) {
+        currentPage--;
+        fetchFiles();
+    }
+};
+
+// Function to handle next page button click
+const nextPage = () => {
+    if (currentPage * itemsPerPage < totalFiles) {
+        currentPage++;
+        fetchFiles();
+    }
+};
+
+// Function to download file
+const downloadFile = async (filename) => {
+    try {
+        const response = await fetch(`http://10.1.8.85:3000/tftp/${filename}`);
+        if (!response.ok) {
+            throw new Error('Failed to download file');
+        }
+
+        // Create a temporary anchor element to trigger the download
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        // Display download success message
+        displayPopup('File Download Complete');
+    } catch (error) {
+        console.error('Error downloading file:', error.message);
+        // Display download error message
+        displayPopup('File Download Error');
+    }
+};
+
+// Function to upload file
+const uploadFile = async (file) => {
+    try {
+        // Check if a file with the same name already exists on the server
+        const response = await fetch(`http://10.1.8.85:3000/tftp/${file.name}`);
+        if (response.ok) {
+            // Display error message for duplicate file
+            displayPopup('File Already Uploaded Today, Dont upload again :)');
+            return; // Exit upload process
+        }
+
+        // If the file is not a duplicate, proceed with the upload
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const uploadResponse = await fetch('http://10.1.8.85:3000/upload', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!uploadResponse.ok) {
+            throw new Error('Failed to upload file');
+        }
+
+        const result = await uploadResponse.text();
+        console.log('Upload result:', result);
+        // Display upload success message
+        displayPopup('File Upload Complete');
+        // Refresh file list after successful upload
+        await fetchFiles();
+    } catch (error) {
+        console.error('Error uploading file:', error.message);
+        // Display upload error message
+        displayPopup('File Upload Failed');
+    }
+};
+
+
+// Function to display a popup message
+const displayPopup = (message) => {
+    // Create a popup element
+    const popup = document.createElement('div');
+    popup.classList.add('popup');
+    popup.textContent = message;
+
+    // Append the popup to the body
+    document.body.appendChild(popup);
+
+    // Remove the popup after a certain time (e.g., 3 seconds)
+    setTimeout(() => {
+        popup.remove();
+    }, 3000);
+};
+
+
+// Function to display the selected file name
+const displaySelectedFile = () => {
+    const fileInput = document.getElementById('fileInput');
+    const selectedFileDisplay = document.getElementById('selectedFileDisplay');
+    if (fileInput.files.length > 0) {
+        const fileName = fileInput.files[0].name;
+        selectedFileDisplay.textContent = `Selected file: ${fileName}`;
+    } else {
+        selectedFileDisplay.textContent = '';
+    }
+};
+
+// Function to perform search
+const searchFiles = async () => {
+    const searchKeyword = document.getElementById('searchInput').value;
+    try {
+        const response = await fetch(`http://10.1.8.85:3000/tftp`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch files');
+        }
+        const files = await response.json();
+        console.log('All files:', files);
+
+        // Filter files based on search keyword
+        const filteredFiles = files.filter(file => file.filename.includes(searchKeyword));
+        console.log('Search results:', filteredFiles);
+        
+        // Update the UI to display the search results
+        displayFiles(filteredFiles);
+    } catch (error) {
+        console.error('Error searching files:', error.message);
+        // Handle the error
+    }
+};
+
+// Get the filter select dropdown element
+const filterSelect = document.getElementById('filterSelect');
+
+// Get the filter options dropdown element
+const filterOptions = document.getElementById('filterOptions');
+
+// Add an event listener to the filter select dropdown
+filterSelect.addEventListener('change', () => {
+    // Get the selected value
+    const selectedValue = filterSelect.value;
+    
+    // Check if the selected value is "ALL"
+    if (selectedValue === "ALL") {
+        // Hide the filter options dropdown
+        filterOptions.style.display = 'none';
+    } else {
+        // Show the filter options dropdown
+        filterOptions.style.display = 'block';
+    }
+});
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Hide the filter options dropdown when the page loads
+    const filterOptions = document.getElementById('filterOptions');
+    filterOptions.style.display = 'none';
+});
+
+// Assuming there's a function to handle login, you can hide the filter options dropdown after successful login
+function handleLogin() {
+    // Perform login logic here...
+
+    // Hide the filter options dropdown after successful login
+    const filterOptions = document.getElementById('filterOptions');
+    filterOptions.style.display = 'none';
+}
+
+// Function to download file based on filter criteria
+const downloadFilteredFiles = async () => {
+    const filterCategory = document.getElementById('filterSelect').value;
+    const filterValue = document.getElementById('filterOptions').value;
+
+    try {
+        let url = 'http://10.1.8.85:3000/tftp';
+        let filename = 'filtered_files.csv';
+
+        if (filterCategory && filterValue && filterCategory !== 'ALL') {
+            url += `?${filterCategory}=${filterValue}`;
+            filename = `${filterCategory}_${filterValue}_files.csv`;
+        }
+
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error('Failed to fetch files');
+        }
+        const files = await response.json();
+
+        // Convert files to CSV format
+        const csvData = convertToCSV(files);
+
+        // Download CSV file
+        downloadCSV(csvData, filename);
+    } catch (error) {
+        console.error('Error downloading filtered files:', error.message);
+    }
+};
+
+// Add event listener to the download button
+const downloadButton = document.getElementById('downloadButton');
+if (downloadButton) {
+    downloadButton.addEventListener('click', downloadFilteredFiles);
+}
+
+
+// Function to convert array of objects to CSV format
+const convertToCSV = (data) => {
+    const header = Object.keys(data[0]).join(',') + '\n';
+    const rows = data.map(obj => Object.values(obj).join(',')).join('\n');
+    return header + rows;
+};
+
+// Function to download CSV file
+const downloadCSV = (csvData, filename) => {
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    if (window.navigator.msSaveOrOpenBlob) {
+        window.navigator.msSaveBlob(blob, filename);
+    } else {
+        const elem = window.document.createElement('a');
+        elem.href = window.URL.createObjectURL(blob);
+        elem.download = filename;
+        document.body.appendChild(elem);
+        elem.click();
+        document.body.removeChild(elem);
+    }
+};
+
+// Function to sign out
+const signOut = () => {
+    // Implement sign out logic
+};
