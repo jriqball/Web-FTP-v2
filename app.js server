@@ -1,0 +1,224 @@
+const express = require('express');
+const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
+const multer = require('multer');
+const mysql = require('mysql');
+
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// MySQL database connection configuration
+const dbConfig = {
+  host: '10.1.8.85',
+  user: 'Iqbal',
+  password: 'P@ssw0rd123',
+  database: 'sftp_spbu'
+};
+
+const db = mysql.createConnection(dbConfig);
+
+// Connect to the database
+db.connect((err) => {
+  if (err) {
+    console.error('Error connecting to MySQL:', err);
+    throw err;
+  }
+  console.log('Connected to MySQL database');
+});
+
+// Create a table to store files
+const createFilesTable = `
+  CREATE TABLE IF NOT EXISTS files (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    site_id VARCHAR(10) NOT NULL,
+    filename VARCHAR(255) NOT NULL
+  )
+`;
+
+db.query(createFilesTable, (err, result) => {
+  if (err) {
+    console.error('Error creating files table:', err);
+    throw err;
+  }
+  console.log('Files table created');
+});
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: path.join(__dirname, 'uploads'),
+  filename: (req, file, cb) => {
+    cb(null, file.originalname); // Keep original filename
+  }
+});
+
+const upload = multer({ storage });
+
+
+// API endpoint to fetch list of files with optional filtering
+app.get('/tftp', async (req, res) => {
+  try {
+    const filterParams = req.query;
+
+    // Check if the filter is "ALL"
+    if (filterParams.filter === 'ALL') {
+      // Return all files without applying any filter
+      db.query('SELECT * FROM file_details_view', (err, results) => {
+        if (err) {
+          console.error('Error fetching files from database:', err);
+          res.status(500).json({ error: 'Failed to fetch files' });
+          return;
+        }
+        console.log('Fetched files from database:', results);
+
+        // Map each result item to an object containing all required fields
+        const files = results.map(item => ({
+          site_id: item.site_id,
+          treg: item.treg,
+          mor: item.mor,
+          witel: item.witel,
+          network_type: item.network_type,
+          filename: item.filename
+        }));
+
+        res.json(files);
+      });
+    } else {
+      // Construct the SQL query dynamically based on filter parameters
+      let query = 'SELECT * FROM file_details_view';
+      const values = [];
+
+      // If filter parameters exist, add WHERE clause to the query
+      if (Object.keys(filterParams).length > 0) {
+        query += ' WHERE';
+        Object.keys(filterParams).forEach((param, index) => {
+          query += ` ${param} = ?`;
+          values.push(filterParams[param]);
+          if (index < Object.keys(filterParams).length - 1) {
+            query += ' AND';
+          }
+        });
+      }
+
+      // Execute the SQL query with proper escaping and values
+      db.query(query, values, (err, results) => {
+        if (err) {
+          console.error('Error fetching files from database:', err);
+          res.status(500).json({ error: 'Failed to fetch files' });
+          return;
+        }
+        console.log('Fetched files from database:', results);
+
+        // Map each result item to an object containing all required fields
+        const files = results.map(item => ({
+          site_id: item.site_id,
+          treg: item.treg,
+          mor: item.mor,
+          witel: item.witel,
+          network_type: item.network_type,
+          filename: item.filename
+        }));
+
+        res.json(files);
+      });
+    }
+  } catch (error) {
+    console.error('Error fetching files:', error.message);
+    res.status(500).json({ error: 'Failed to fetch files' });
+  }
+});
+
+// API endpoint to download a file
+app.get('/tftp/:filename', async (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(__dirname, 'uploads', filename);
+
+  try {
+    // Check if the file exists
+    if (fs.existsSync(filePath)) {
+      // Serve the file for download
+      res.download(filePath, filename, (err) => {
+        if (err) {
+          console.error('Error downloading file:', err);
+          res.status(500).json({ error: 'Failed to download file' });
+        }
+      });
+    } else {
+      res.status(404).json({ error: 'File not found' });
+    }
+  } catch (error) {
+    console.error('Error downloading file:', error);
+    res.status(500).json({ error: 'Failed to download file' });
+  }
+});
+
+// API endpoint to upload a file
+app.post('/upload', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      throw new Error('File not provided');
+    }
+
+    // Extract site_id from filename
+    const filenameParts = req.file.originalname.split('_');
+    const site_id = filenameParts[0].replace('.', ''); // Remove dot from site_id
+
+    // Insert file into database
+    const filename = req.file.originalname;
+    db.query('INSERT INTO files (site_id, filename) VALUES (?, ?)', [site_id, filename], (err, result) => {
+      if (err) {
+        console.error('Error inserting file into database:', err);
+        res.status(500).json({ error: 'Failed to upload file' });
+        return;
+      }
+      console.log('File uploaded:', filename);
+      res.status(200).send('File uploaded successfully');
+    });
+  } catch (error) {
+    console.error('Error uploading file:', error.message);
+    res.status(500).json({ error: 'Failed to upload file' });
+  }
+});
+
+
+// API endpoint to fetch list of filter options
+app.get('/tftp/filterOptions/:category', async (req, res) => {
+  try {
+    const category = req.params.category;
+
+    // If the category is "ALL", return an empty array as we don't need specific filter options
+    if (category === 'ALL') {
+      return res.json([]);
+    }
+
+    // Adjust SQL query to use the correct column name and ensure proper escaping
+    const query = `SELECT DISTINCT ?? FROM file_details_view`;
+    const values = [category];
+
+    // Execute the SQL query with proper escaping and values
+    db.query(query, values, (err, results) => {
+      if (err) {
+        console.error('Error fetching filter options:', err);
+        res.status(500).json({ error: 'Failed to fetch filter options' });
+        return;
+      }
+
+      // Extract the filter options from the query results
+      const options = results.map(row => row[category]);
+
+      // Send the filter options as a JSON response
+      res.json(options);
+    });
+  } catch (error) {
+    console.error('Error fetching filter options:', error);
+    res.status(500).json({ error: 'Failed to fetch filter options' });
+  }
+});
+
+
+const PORT = process.env.PORT || 3000;
+const PRIVATE_IP = '10.1.8.85';
+app.listen(PORT, PRIVATE_IP, () => console.log(`Server running on ${PRIVATE_IP}:${PORT}`));
